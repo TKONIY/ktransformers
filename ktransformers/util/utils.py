@@ -115,7 +115,6 @@ def prefill_and_generate(model, tokenizer, inputs, max_new_tokens=10000, use_cud
             past_key_values.change_seq_length(1)
         for device in all_cuda_device:
             torch.cuda.synchronize(device)
-        #print(logits)
         next_token_scores = logits_warper(inputs, logits[:, -1, :])
         if generation_config.do_sample:
             probs = nn.functional.softmax(next_token_scores, dim=-1)
@@ -142,7 +141,7 @@ def prefill_and_generate(model, tokenizer, inputs, max_new_tokens=10000, use_cud
             past_key_values.cur_idx=cache_position
         start_time = time.time()
 
-        inputs_embeds = model.model.embed_tokens(inputs.to("cpu")).to(torch_device)
+        # inputs_embeds = model.model.embed_tokens(inputs.to("cpu")).to(torch_device)
         if mode == "long_context":
             inputs_embeds = model.model.embed_tokens(inputs.to("cpu"))
         else:

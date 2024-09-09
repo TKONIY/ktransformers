@@ -1,8 +1,8 @@
 """
-Description  :  
+Description  :
 Author       : Boxin Zhang, Azure-Tang
 Version      : 0.1.0
-Copyright (c) 2024 by KVCache.AI, All Rights Reserved. 
+Copyright (c) 2024 by KVCache.AI, All Rights Reserved.
 """
 
 import os
@@ -55,19 +55,19 @@ def local_chat(
     max_new_tokens: int = 1000,
     cpu_infer: int = Config().cpu_infer,
     use_cuda_graph: bool = True,
-    prompt_file : str | None = None,
+    prompt_file: str | None = None,
     mode: str = "normal",
 ):
-
-
     torch.set_grad_enabled(False)
 
     Config().cpu_infer = cpu_infer
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     config = AutoConfig.from_pretrained(model_path, trust_remote_code=True)
-    if mode == 'long_context':
-        assert config.architectures[0] == "LlamaForCausalLM", "only LlamaForCausalLM support long_context mode"
+    if mode == "long_context":
+        assert (
+            config.architectures[0] == "LlamaForCausalLM"
+        ), "only LlamaForCausalLM support long_context mode"
         torch.set_default_dtype(torch.float16)
     else:
         torch.set_default_dtype(config.torch_dtype)
@@ -136,6 +136,7 @@ def local_chat(
         if content == "":
             if prompt_file != None:
                 content = open(prompt_file, "r").read()
+                print("Read prompt already")
             else:
                 content = "Please write a piece of quicksort code in C++."
         elif os.path.isfile(content):
@@ -144,9 +145,12 @@ def local_chat(
         input_tensor = tokenizer.apply_chat_template(
             messages, add_generation_prompt=True, return_tensors="pt"
         )
-        if mode == 'long_context':
-            assert Config().long_context_config['max_seq_len'] > input_tensor.shape[1] + max_new_tokens, \
-            "please change max_seq_len in  ~/.ktransformers/config.yaml"
+        if mode == "long_context":
+            print(input_tensor.shape[1] + max_new_tokens)
+            assert (
+                Config().long_context_config["max_seq_len"]
+                > input_tensor.shape[1] + max_new_tokens
+            ), "please change max_seq_len in  ~/.ktransformers/config.yaml"
         torch.set_default_dtype(
             torch.bfloat16
         )  # TODO: Remove this, replace dtype using config
